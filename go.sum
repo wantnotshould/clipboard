@@ -1,4 +1,4 @@
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/wantnotshould/sol v0.0.1 h1:aTh3sW7kSNwdKV9zK8fCt5UOSC9HmY1sFuaKdY+Iyn8=
-github.com/wantnotshould/sol v0.0.1/go.mod h1:WDegNfd6pNWsKKKpjC/H6iIbgGeCmrsH4NcY6NH5jcI=
+github.com/wantnotshould/sol v0.0.2 h1:7hMoxvFYHAO7+L6NOJFI4EGpz1ZNgKHVOGMnF0bsx3Y=
+github.com/wantnotshould/sol v0.0.2/go.mod h1:WDegNfd6pNWsKKKpjC/H6iIbgGeCmrsH4NcY6NH5jcI=

@@ -74,8 +74,24 @@ func init() {
 	}
 }
 
+func renderNotFound(c *sol.Context) {
+	c.Writer.WriteHeader(http.StatusNotFound)
+	c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	err := templates.ExecuteTemplate(c.Writer, "notfound.html", nil)
+	if err != nil {
+		fallback := "404 - Not Found\nOops, this has already been seen or it's expired... gone forever! 😅"
+		http.Error(c.Writer, fallback, http.StatusNotFound)
+	}
+}
+
 func main() {
 	sl := sol.New()
+
+	//  已读/路由不存在
+	sl.NotFound(func(c *sol.Context) {
+		renderNotFound(c)
+	})
 
 	// 根路由，展示文本链接
 	sl.GET("/", func(c *sol.Context) {
@@ -162,7 +178,7 @@ func main() {
 	sl.GET("/t/:id", func(c *sol.Context) {
 		id := c.Param("id")
 		if len(id) < 8 {
-			http.NotFound(c.Writer, c.Request)
+			renderNotFound(c)
 			return
 		}
 
@@ -170,7 +186,7 @@ func main() {
 		e, exists := store.data[id]
 		if !exists || e.used || time.Since(e.createdAt) > textLifetime {
 			store.Unlock()
-			http.NotFound(c.Writer, c.Request)
+			renderNotFound(c)
 			return
 		}
 
@@ -212,7 +228,7 @@ func main() {
 		atomic.StoreUint64(&createCount, 0)
 		atomic.StoreUint64(&viewCount, 0)
 
-		c.Writer.WriteHeader(http.StatusOK)
+		c.Status(http.StatusOK)
 		c.Writer.Write([]byte("Reset successful! All texts cleared, counters reset."))
 	})
 

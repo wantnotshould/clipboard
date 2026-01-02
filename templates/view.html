@@ -1,233 +1,231 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>粘贴板内容预览</title>
+		<style>
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>粘贴板内容预览</title>
-    <style>
-       * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+			body {
+				background: #fff;
+				color: #1f2328;
+				line-height: 1.6;
+				padding: 25px;
+				min-height: 100vh;
+			}
 
-        body {
-            background: #fff;
-            color: #1f2328;
-            line-height: 1.6;
-            padding: 25px;
-            min-height: 100vh;
-        }
-    
-        .box {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-            padding: 34px;
-            text-align: center;
-        }
-    
-        h2 {
-            font-size: 24px;
-            margin-bottom: 34px;
-            color: #2c3e50;
-        }
-    
-        .alert {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 34px;
-            text-align: left;
-            font-size: 16px;
-            line-height: 1.8;
-        }
-    
-        .alert strong {
-            color: #e74c3c;
-            font-size: 17px;
-        }
-    
-        pre {
-            background: #f8f9fa;
-            border: 1px solid #eee;
-            padding: 25px;
-            border-radius: 8px;
-            text-align: left;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-size: 16px;
-            margin: 25px 0;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-    
-        #copyBtn {
-            background: #1f883d;
-            color: #fff;
-            border: none;
-            padding: 16px 34px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin: 25px 0;
-        }
-    
-        #copyBtn:hover {
-            background: #1c8139;
-        }
-    
-        #copyBtn.copied {
-            background: #27ae60;
-        }
-    
-        #copyBtn.failed {
-            background: #ce2208;
-        }
-    
-        #copyBtn:disabled {
-            background: #95d8a6;
-            cursor: not-allowed;
-        }
-    
-        .warn {
-            color: #ce2208;
-            font-weight: bold;
-            margin-top: 34px;
-            font-size: 14px;
-        }
-    
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-    
-            .box {
-                padding: 34px 25px;
-            }
-    
-            h2 {
-                font-size: 22px;
-            }
-    
-            pre {
-                font-size: 16px;
-                padding: 16px;
-            }
-    
-            #copyBtn {
-                width: 100%;
-                padding: 16px;
-            }
-    
-            .alert {
-                font-size: 14px;
-                padding: 12px;
-            }
-        }
-    </style>
-</head>
+			.box {
+				max-width: 800px;
+				margin: 0 auto;
+				background: #fff;
+				border-radius: 12px;
+				box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+				padding: 34px;
+				text-align: center;
+			}
 
-<body>
-    <div class="box">
-        <h2>粘贴板内容预览</h2>
-    
-        <div class="alert">
-            <strong>⚠️ 安全提醒</strong><br>
-            请务必核对发送者的身份！<br>
-            不要轻易相信陌生人发来的账号、密码、验证码、支付链接或银行卡信息。<br>
-            常见的诈骗类型包括假冒客服、虚假投资、领导诈骗、刷单返现、交友“杀猪盘”等。<br>
-            如有任何疑问，请通过官方渠道自行验证，保护好您的财产和个人信息安全！
-        </div>
-    
-        <pre id="content">{{.Content}}</pre>
-    
-        <button id="copyBtn">一键复制文本</button>
-    
-        <p class="warn">
-            本页面内容仅显示一次，已在查看后自动删除<br>
-            刷新或关闭页面后将无法再次访问
-        </p>
-    </div>
+			h2 {
+				font-size: 24px;
+				margin-bottom: 34px;
+				color: #2c3e50;
+			}
 
-    <script>
-        const btn = document.getElementById('copyBtn');
-        const content = document.getElementById('content').innerText.trim();
+			.alert {
+				background: #fff3cd;
+				border: 1px solid #ffeaa7;
+				color: #856404;
+				padding: 16px;
+				border-radius: 8px;
+				margin-bottom: 34px;
+				text-align: left;
+				font-size: 16px;
+				line-height: 1.8;
+			}
 
-        async function copyToClipboard(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                try {
-                    await navigator.clipboard.writeText(text);
-                    return true;
-                } catch (err) {
-                    console.warn('use execCommand', err);
-                }
-            }
+			.alert strong {
+				color: #e74c3c;
+				font-size: 17px;
+			}
 
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-9999px';
-            textArea.style.top = '-9999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+			pre {
+				background: #f8f9fa;
+				border: 1px solid #eee;
+				padding: 25px;
+				border-radius: 8px;
+				text-align: left;
+				white-space: pre-wrap;
+				word-wrap: break-word;
+				font-size: 16px;
+				margin: 25px 0;
+				max-height: 60vh;
+				overflow-y: auto;
+			}
 
-            try {
-                const successful = document.execCommand('copy');
-                document.body.removeChild(textArea);
-                return successful;
-            } catch (err) {
-                document.body.removeChild(textArea);
-                return false;
-            }
-        }
+			#copyBtn {
+				background: #1f883d;
+				color: #fff;
+				border: none;
+				padding: 16px 34px;
+				font-size: 16px;
+				border-radius: 8px;
+				cursor: pointer;
+				transition: all 0.3s;
+				margin: 25px 0;
+			}
 
-        btn.addEventListener('click', function () {
-            if (btn.disabled) return;
+			#copyBtn:hover {
+				background: #1c8139;
+			}
 
-            btn.disabled = true;
-            btn.textContent = '复制中...';
+			#copyBtn.copied {
+				background: #27ae60;
+			}
 
-            copyToClipboard(content).then(success => {
-                if (success) {
-                    btn.textContent = '✅ 已复制到剪贴板！';
-                    btn.classList.add('copied');
-                    // 2秒后恢复
-                    setTimeout(resetButton, 2000);
-                } else {
-                    btn.textContent = '❌ 复制失败';
-                    btn.classList.add('failed');
-                    alert('复制失败，请长按文本手动选择复制');
-                    setTimeout(resetButton, 3000);
-                }
-            });
-        });
+			#copyBtn.failed {
+				background: #ce2208;
+			}
 
-        function resetButton() {
-            btn.textContent = '一键复制';
-            btn.classList.remove('copied', 'failed');
-            btn.disabled = false;
-        }
+			#copyBtn:disabled {
+				background: #95d8a6;
+				cursor: not-allowed;
+			}
 
-        document.getElementById('content').addEventListener('longpress', function () {});
+			.warn {
+				color: #ce2208;
+				font-weight: bold;
+				margin-top: 34px;
+				font-size: 14px;
+			}
 
-        let longPressTimer;
-        const pre = document.getElementById('content');
-        pre.addEventListener('touchstart', () => {
-            longPressTimer = setTimeout(() => {
-                alert('可长按文本手动复制');
-            }, 800);
-        });
-        pre.addEventListener('touchend', () => clearTimeout(longPressTimer));
-        pre.addEventListener('touchmove', () => clearTimeout(longPressTimer));
-    </script>
-</body>
+			@media (max-width: 600px) {
+				body {
+					padding: 10px;
+				}
 
+				.box {
+					padding: 34px 25px;
+				}
+
+				h2 {
+					font-size: 22px;
+				}
+
+				pre {
+					font-size: 16px;
+					padding: 16px;
+				}
+
+				#copyBtn {
+					width: 100%;
+					padding: 16px;
+				}
+
+				.alert {
+					font-size: 14px;
+					padding: 12px;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="box">
+			<h2>粘贴板内容预览</h2>
+
+			<div class="alert">
+				<strong>⚠️ 安全提醒</strong><br />
+				请务必核对发送者的身份！<br />
+				不要轻易相信陌生人发来的账号、密码、验证码、支付链接或银行卡信息。<br />
+				常见的诈骗类型包括假冒客服、虚假投资、领导诈骗、刷单返现、交友“杀猪盘”等。<br />
+				如有任何疑问，请通过官方渠道自行验证，保护好您的财产和个人信息安全！
+			</div>
+
+			<pre id="content">{{.Content}}</pre>
+
+			<button id="copyBtn">一键复制文本</button>
+
+			<p class="warn">
+				本页面内容仅显示一次，已在查看后自动删除<br />
+				刷新或关闭页面后将无法再次访问
+			</p>
+		</div>
+
+		<script>
+			const btn = document.getElementById('copyBtn')
+			const content = document.getElementById('content').innerText.trim()
+
+			async function copyToClipboard(text) {
+				if (navigator.clipboard && window.isSecureContext) {
+					try {
+						await navigator.clipboard.writeText(text)
+						return true
+					} catch (err) {
+						console.warn('use execCommand', err)
+					}
+				}
+
+				const textArea = document.createElement('textarea')
+				textArea.value = text
+				textArea.style.position = 'fixed'
+				textArea.style.left = '-9999px'
+				textArea.style.top = '-9999px'
+				document.body.appendChild(textArea)
+				textArea.focus()
+				textArea.select()
+
+				try {
+					const successful = document.execCommand('copy')
+					document.body.removeChild(textArea)
+					return successful
+				} catch (err) {
+					document.body.removeChild(textArea)
+					return false
+				}
+			}
+
+			btn.addEventListener('click', function () {
+				if (btn.disabled) return
+
+				btn.disabled = true
+				btn.textContent = '复制中...'
+
+				copyToClipboard(content).then((success) => {
+					if (success) {
+						btn.textContent = '✅ 已复制到剪贴板！'
+						btn.classList.add('copied')
+						// 2秒后恢复
+						setTimeout(resetButton, 2000)
+					} else {
+						btn.textContent = '❌ 复制失败'
+						btn.classList.add('failed')
+						alert('复制失败，请长按文本手动选择复制')
+						setTimeout(resetButton, 3000)
+					}
+				})
+			})
+
+			function resetButton() {
+				btn.textContent = '一键复制'
+				btn.classList.remove('copied', 'failed')
+				btn.disabled = false
+			}
+
+			document.getElementById('content').addEventListener('longpress', function () {})
+
+			let longPressTimer
+			const pre = document.getElementById('content')
+			pre.addEventListener('touchstart', () => {
+				longPressTimer = setTimeout(() => {
+					alert('可长按文本手动复制')
+				}, 800)
+			})
+			pre.addEventListener('touchend', () => clearTimeout(longPressTimer))
+			pre.addEventListener('touchmove', () => clearTimeout(longPressTimer))
+		</script>
+	</body>
 </html>

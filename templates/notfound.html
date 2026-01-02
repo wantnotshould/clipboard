@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>页面不存在 - 粘贴板</title>
+		<style>
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				background: #fff;
+				color: #1f2328;
+				line-height: 1.6;
+				padding: 25px;
+				min-height: 100vh;
+			}
+
+			.box {
+				max-width: 500px;
+				margin: 0 auto;
+				background: #fff;
+				border-radius: 12px;
+				box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+				padding: 34px;
+			}
+
+			h2 {
+				font-size: 24px;
+				margin-bottom: 34px;
+				color: #2c3e50;
+			}
+
+			ul {
+				display: flex;
+				flex-direction: column;
+				list-style: none;
+			}
+
+			a {
+				display: block;
+				margin: 20px 0;
+				font-size: 18px;
+				word-break: break-all;
+				color: #0969da;
+				text-decoration: underline;
+				text-underline-offset: 0.2rem;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="box">
+			<h2>404 - 页面不存在</h2>
+			<p>您访问的链接可能已经失效、被删除，或从未存在过。</p>
+			<p>常见原因：</p>
+			<ul>
+				<li>内容已被查看一次后自动删除</li>
+				<li>链接已超过 1 分钟有效期</li>
+				<li>输入的地址有误</li>
+			</ul>
+			<a href="/" class="home-link">返回首页，重新生成链接</a>
+		</div>
+	</body>
+</html>
