@@ -9,9 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -62,23 +60,15 @@ func countStats() (create, view uint64) {
 var templateFiles embed.FS
 var templates = template.Must(template.ParseFS(templateFiles, "templates/*.html"))
 
-var adminPassword string
-
-// 初始化配置
-func init() {
-	adminPassword = os.Getenv("CLIPBOARD_PASSWORD")
-	if adminPassword == "" {
-		adminPassword = uuid.NewString()[:16]
-		log.Printf("WARNING: CLIPBOARD_PASSWORD not set! Using auto-generated password: %s\n", adminPassword)
-		log.Println("Set environment variable CLIPBOARD_PASSWORD for production!")
-	}
-}
-
-func renderNotFound(c *sol.Context) {
+func renderNotFound(c *sol.Context, prefix string) {
 	c.Writer.WriteHeader(http.StatusNotFound)
 	c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	err := templates.ExecuteTemplate(c.Writer, "notfound.html", nil)
+	err := templates.ExecuteTemplate(c.Writer, "notfound.html", struct {
+		Prefix string
+	}{
+		Prefix: prefix,
+	})
 	if err != nil {
 		fallback := "404 - Not Found\nOops, this has already been seen or it's expired... gone forever! 😅"
 		http.Error(c.Writer, fallback, http.StatusNotFound)
@@ -86,15 +76,22 @@ func renderNotFound(c *sol.Context) {
 }
 
 func main() {
+	var adminPassword string
+	port := flag.String("port", "8080", "server port")
+	// Support proxy
+	prefix := flag.String("prefix", "clipboard", "proxy prefix")
+	flag.StringVar(&adminPassword, "password", uuid.NewString()[:16], "password for clearing the store")
+	flag.Parse()
+
 	sl := sol.New()
 
 	//  已读/路由不存在
 	sl.NotFound(func(c *sol.Context) {
-		renderNotFound(c)
+		renderNotFound(c, *prefix)
 	})
 
 	// 根路由，展示文本链接
-	sl.GET("/", func(c *sol.Context) {
+	sl.GET("/"+*prefix, func(c *sol.Context) {
 		showResult := false
 		resultURL := ""
 
@@ -103,7 +100,7 @@ func main() {
 			if e, ok := store.data[id]; ok && !e.used && time.Since(e.createdAt) < textLifetime {
 				showResult = true
 				scheme := c.Scheme()
-				resultURL = fmt.Sprintf("%s://%s/t/%s", scheme, c.Host(), id)
+				resultURL = fmt.Sprintf("%s://%s/%s/t/%s", scheme, c.Host(), *prefix, id)
 			}
 			store.RUnlock()
 		}
@@ -117,6 +114,7 @@ func main() {
 			ViewCount        uint64
 			Year             int
 			MaxContentLength int
+			Prefix           string
 		}{
 			HasResult:        showResult,
 			URL:              resultURL,
@@ -124,6 +122,7 @@ func main() {
 			ViewCount:        viewCnt,
 			Year:             time.Now().Year(),
 			MaxContentLength: maxContentLength,
+			Prefix:           *prefix,
 		})
 		if err != nil {
 			http.Error(c.Writer, "template render error", http.StatusInternalServerError)
@@ -131,7 +130,7 @@ func main() {
 	})
 
 	// 添加文本
-	sl.POST("/add", func(c *sol.Context) {
+	sl.POST(*prefix+"/add", func(c *sol.Context) {
 		if err := c.Request.ParseForm(); err != nil {
 			http.Error(c.Writer, "form error", http.StatusBadRequest)
 			return
@@ -171,14 +170,15 @@ func main() {
 
 		incrementCreate()
 
-		http.Redirect(c.Writer, c.Request, "/?s="+id, http.StatusSeeOther)
+		redirectURL := fmt.Sprintf("/%s?s=%s", *prefix, id)
+		http.Redirect(c.Writer, c.Request, redirectURL, http.StatusSeeOther)
 	})
 
 	// 查看文本
-	sl.GET("/t/:id", func(c *sol.Context) {
+	sl.GET(*prefix+"/t/:id", func(c *sol.Context) {
 		id := c.Param("id")
 		if len(id) < 8 {
-			renderNotFound(c)
+			renderNotFound(c, *prefix)
 			return
 		}
 
@@ -186,7 +186,7 @@ func main() {
 		e, exists := store.data[id]
 		if !exists || e.used || time.Since(e.createdAt) > textLifetime {
 			store.Unlock()
-			renderNotFound(c)
+			renderNotFound(c, *prefix)
 			return
 		}
 
@@ -209,7 +209,7 @@ func main() {
 	})
 
 	// 重置数据
-	sl.POST("/admin/reset", func(c *sol.Context) {
+	sl.POST(*prefix+"/admin/reset", func(c *sol.Context) {
 		if err := c.Request.ParseForm(); err != nil {
 			http.Error(c.Writer, "Bad request", http.StatusBadRequest)
 			return
@@ -233,8 +233,5 @@ func main() {
 	})
 
 	// 启动服务器
-	port := flag.String("port", "8080", "server port")
-	flag.Parse()
-
 	sl.Run(":" + *port)
 }

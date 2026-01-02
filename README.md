@@ -2,6 +2,8 @@
 
 一个基于 [Sol](https://github.com/wantnotshould/sol) 的在线粘贴板工具
 
+[在线使用](https://musei.cn/clipboard)
+
 ## 快速开始
 
 ```bash
@@ -16,15 +18,15 @@ go run .
 go run . -port 8080
 ```
 
-## 管理员功能
+本地预览：[http://localhost:8080/clipboard](http://localhost:8080/clipboard)
 
-**服务启动时会自动生成一个随机管理员密码（如果未设置环境变量），用于清空所有数据和重置计数器。**
-
-### 设置固定密码（推荐生产环境）
+**线上后台运行**
 
 ```bash
-CLIPBOARD_PASSWORD=your_password go run .
+nohup ./clipboard -port 8080 -password your_password > clipboard.log 2>&1 &
 ```
+
+## 管理员功能
 
 ### 重置所有数据
 

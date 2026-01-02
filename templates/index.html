@@ -137,7 +137,7 @@
 				</p>
 			</div>
 			{{else}}
-			<form method="post" action="add">
+			<form method="post" action="/{{.Prefix}}/add">
 				<textarea
 					name="content"
 					placeholder="请输入文本信息（{{.MaxContentLength}}字符以内）"
