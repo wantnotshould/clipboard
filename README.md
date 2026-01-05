@@ -44,6 +44,6 @@ curl -X POST -d "pass=your_password" http://localhost:8080/admin/reset
 
 ## 许可证
 
-MIT License
+[MIT License](./LICENSE)
 
 欢迎 Star、Fork、贡献代码或提出建议！
