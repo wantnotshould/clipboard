@@ -2,8 +2,6 @@
 
 一个基于 [Sol](https://github.com/wantnotshould/sol) 的在线粘贴板工具
 
-[在线使用](https://musei.cn/clipboard)
-
 ## 快速开始
 
 ```bash
